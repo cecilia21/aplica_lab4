@@ -11,10 +11,11 @@
 #include <iostream>
 #include <math.h>
 #define MAX_MON 5
-#define MAX_INF 1<<32
+#define MAX_INF (1<<30)
 #define sqr(x) ((x)*(x))
 
 using namespace std;
+
 
 /*
  * 
@@ -34,7 +35,8 @@ void asignar_items(double ** data, double ** centroides, int cantAtributos, int 
     //int *arrClasif = new int[cantDatos];
     double dist_calc, min_dist=MAX_INF;
     //para cada punto, calcular su distancia a cada cluster
-    for(int i=0;i<cantDatos;i++)
+    for(int i=0;i<cantDatos;i++){
+        min_dist=MAX_INF;
         for(int j=0; j<cantClusters;j++){
             dist_calc= calcular_distancia(data[i], centroides[j],cantAtributos);
             if(dist_calc<min_dist) {
@@ -42,6 +44,7 @@ void asignar_items(double ** data, double ** centroides, int cantAtributos, int 
                 arrClasif[i]=j;
             }
         }
+    }
 }
 
 void calcular_media_cluster(double **data, int cantAtributos, int cantDatos,

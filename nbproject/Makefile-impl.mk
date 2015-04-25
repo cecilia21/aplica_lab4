@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=lab4_2015_aplica
+PROJECTNAME=aplica_lab4
 
 # Active Configuration
 DEFAULTCONF=Debug
