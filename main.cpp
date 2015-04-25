@@ -147,8 +147,11 @@ int main(int argc, char** argv) {
     printf("escriba la cantidad de atributos");
     cin>>cantAtributos;
     printf("escriba la cantidad de clusters");
+    char v;
     cin>>clusters;
     char a;
+    char b;
+    
     //en la lecutra de datos falta hacer restricciones como 
     //si no encuentra uno de los atributos no debe tomar en cuenta el registro
     
