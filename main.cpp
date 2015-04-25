@@ -10,7 +10,8 @@
 #include <fstream>
 #include <iostream>
 #include <math.h>
-
+#define MAX_MON 5
+#define MAX_INF 1<<32
 #define sqr(x) ((x)*(x))
 
 using namespace std;
@@ -31,8 +32,8 @@ double calcular_distancia(double * data, double * centroides, int cantAtributos)
 void asignar_items(double ** data, double ** centroides, int cantAtributos, int cantDatos,
         int cantClusters, int* arrClasif){
     //int *arrClasif = new int[cantDatos];
-    double dist_calc, min_dist=5000;
-    //para cada punto, calcular su distancia para cada cluster
+    double dist_calc, min_dist=MAX_INF;
+    //para cada punto, calcular su distancia a cada cluster
     for(int i=0;i<cantDatos;i++)
         for(int j=0; j<cantClusters;j++){
             dist_calc= calcular_distancia(data[i], centroides[j],cantAtributos);
@@ -112,14 +113,14 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
     //definir centroides iniciales;
     definir_centroides(centroides, cantClusters, cantAtributos); //falta hacer bien esta funcion
     int convergencia = 0;
-    double conv_min = 10;
+    double conv_min = MAX_MON;
     while(!convergencia){
         asignar_items(data, centroides, cantAtributos, cantDatos, cantClusters, 
                 arrClasif);
         double *dist_movida = mover_centroides(centroides, cantClusters, cantAtributos, arrClasif, data,
                 cantDatos);
         for(int i=0;i<cantClusters;i++)
-            if(dist_movida[i]<5)
+            if(dist_movida[i]<conv_min)
                 convergencia++;
         if(convergencia==cantClusters)
             convergencia =1;
