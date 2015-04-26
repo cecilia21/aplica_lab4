@@ -134,7 +134,7 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
         printf("\n");
     }    
     ofstream output;
-    output.open("k_output.csv",ios::out);
+    output.open("k_output3.csv",ios::out);
     for(int i=0;i<cantDatos;i++){
         for(int j =0;j<cantAtributos;j++)
             output<<data[i][j]<<",";
@@ -149,68 +149,66 @@ int main(int argc, char** argv) {
     //en una matriz doble donde mat[cantDatos][cantAtributos]
        
     char * filename = new char [100];
-    int cantAtributos, clusters;
+    int cantAtributos=2, clusters=4;
     printf("escriba el nombre de archivo\n");
-    cin>>filename;
+    //cin>>filename;
     printf("escriba la cantidad de atributos\n");
-    cin>>cantAtributos;
+    //cin>>cantAtributos;
     printf("escriba la cantidad de clusters\n");
 
-    cin>>clusters;
+    //cin>>clusters;
     char a;
-
     
-    //en la lecutra de datos falta hacer restricciones como 
-    //si no encuentra uno de los atributos no debe tomar en cuenta el registro
-    
-    ifstream input;
-    
-    input.open(filename, ios_base::in);
-    int cantDatos=0;
-    char * numero = new char [50];
-    double * dataTemp= new double[cantAtributos];
-    while(!input.eof() && input){
-        for(int j = 0; j<cantAtributos;j++){
-            //input>>dataTemp[j];
-            //if(j!=cantAtributos-1)input>>a;
-            input.getline(numero, 100,',');
-            dataTemp[j]=atoi(numero)*1.0;
-            cout<<dataTemp[j]<<endl;
-        }
-        if(input.eof())
-                break;
-        cantDatos++;
-    }
-    input.close();
-
-    double **data = new double* [cantDatos];
-    for(int i=0;i<cantDatos;i++){
-        double *temp = new double[cantAtributos];
-        data[i]=temp;
-    }
-    ifstream inputD;
-    inputD.open(filename, ios::in);
-    inputD.seekg(ios_base::beg);
     double *arrMin= new double[cantAtributos];
     double *arrMax= new double[cantAtributos];
     for(int n=0;n<cantAtributos;n++){
         arrMin[n]=MAX_DOUBLE;
         arrMax[n]=MIN_DOUBLE;
     }
+    
+    //en la lecutra de datos falta hacer restricciones como 
+    //si no encuentra uno de los atributos no debe tomar en cuenta el registro
+    
+    ifstream input;   
+    input.open("a.csv", ios_base::in);
+    
+    double dataBuff[10000][cantAtributos];
+    double numero;
+    char fin;
+    int cantDatos=0;
+    while( input){
+        for(int j=0;j<cantAtributos;j++){
+            input>>numero;
+            input.ignore(1);// se ignora la coma
+            fin=input.peek();
+            if((fin>='0' & fin<='9')||input.eof() ) dataBuff[cantDatos][j]=numero; 
+            else {
+                cantDatos--; // no se considera el registro si tiene menos atributos
+                break;
+            }
+            
+        }
+        cantDatos++;
+        if(input.eof()) break;       
+    }
+    input.close();
+    double **data = new double* [cantDatos];
+    for(int i=0;i<cantDatos;i++){
+        double *temp = new double[cantAtributos];
+        data[i]=temp;
+    }    
     for(int i=0;i<cantDatos;i++){
         for(int j=0;j<cantAtributos;j++){
-                inputD.getline(numero, 100,',');
-                double temp=atoi(numero)*1.0;
-                if(temp < arrMin [j]) arrMin[j]=temp;
-                if(temp > arrMax [j]) arrMax[j]=temp;
-                data[i][j]=temp;
-                cout<<data[i][j]<<endl;
+            double dato= dataBuff[i][j];
+            if(dato < arrMin [j]) arrMin[j]=dato;
+            if(dato > arrMax [j]) arrMax[j]=dato;
+            data[i][j]=dato;
+            cout<<dato<< " ";  
         }
+        cout<<endl;
     }
     clusterizacion(cantAtributos, clusters, data, cantDatos,arrMin,arrMax);
-    
-    cin>>a;
-    cout<<a;
+    cout<<cantDatos<<endl;
 
     return 0;
 }
