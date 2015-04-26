@@ -13,6 +13,8 @@
 #define MAX_MON 5
 #define MAX_INF (1<<30)
 #define sqr(x) ((x)*(x))
+#define MAX_DOUBLE 100000000.0
+#define MIN_DOUBLE -100000000.0
 
 using namespace std;
 
@@ -85,28 +87,24 @@ double* mover_centroides(double **centroides, int cantClusters, int cantAtributo
     return distancias; //????
 }
 
-void definir_centroides(double ** centroides, int cantClusters, int cantAtributos){
-    /*centroides[0][0]=110.1;
-    centroides[0][1]= 16510.1;
-    centroides[0][2]=13640.1;
-    centroides[0][3]=119.9;
-    centroides[1][0]=140.2;
-    centroides[1][1]=16540.1;
-    centroides[1][2]=13670.1;
-    centroides[1][3]=127.9;*/
-    
-    centroides[0][0]=0.0;
-    centroides[0][1]= 0.0;
-    centroides[1][0]=0.0;
-    centroides[1][1]=0.0;
-    centroides[2][0]=0.0;
-    centroides[2][1]=0.0;
-    centroides[3][0]=0.0;
-    centroides[3][1]=0.0;
-    
+void definir_centroides(double ** centroides, int cantClusters, int cantAtributos,
+                        double *arrMin,double *arrMax){
+    for(int i=0;i<cantClusters;i++){
+        for(int j=0;j<cantAtributos;j++){
+            int pivote=round((arrMax[j]-arrMin[j])/cantClusters);
+            centroides[i][j]= arrMin[j]+ pivote*i + (rand() % pivote);
+        }
+    }
+    for(int i=0;i<cantClusters;i++){
+        for(int j=0;j<cantAtributos;j++){
+            printf("%lf ",centroides[i][j]);
+        }
+        printf("\n");
+    }
 }
 
-void clusterizacion(int cantAtributos, int cantClusters, double ** data, int cantDatos){
+void clusterizacion(int cantAtributos, int cantClusters, double ** data, int cantDatos,
+                    double *arrMin,double *arrMax){
     double ** centroides = new double *[cantClusters];
     for(int i=0;i<cantClusters;i++){
         double *temp = new double[cantAtributos];
@@ -114,7 +112,7 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
     }
     int * arrClasif= new int [cantDatos];
     //definir centroides iniciales;
-    definir_centroides(centroides, cantClusters, cantAtributos); //falta hacer bien esta funcion
+    definir_centroides(centroides, cantClusters, cantAtributos,arrMin,arrMax); //falta hacer bien esta funcion
     int convergencia = 0;
     double conv_min = MAX_MON;
     while(!convergencia){
@@ -129,6 +127,12 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
             convergencia =1;
         else convergencia =0;
     }
+    for(int i=0;i<cantClusters;i++){
+        for(int j=0;j<cantAtributos;j++){
+            printf("%lf ",centroides[i][j]);
+        }
+        printf("\n");
+    }    
     ofstream output;
     output.open("k_output.csv",ios::out);
     for(int i=0;i<cantDatos;i++){
@@ -136,7 +140,7 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
             output<<data[i][j]<<",";
         output<<arrClasif[i]<<endl;
     }
-    
+    output.close();
     
 }
 
@@ -146,11 +150,11 @@ int main(int argc, char** argv) {
        
     char * filename = new char [100];
     int cantAtributos, clusters;
-    printf("escriba el nombre de archivo");
+    printf("escriba el nombre de archivo\n");
     cin>>filename;
-    printf("escriba la cantidad de atributos");
+    printf("escriba la cantidad de atributos\n");
     cin>>cantAtributos;
-    printf("escriba la cantidad de clusters");
+    printf("escriba la cantidad de clusters\n");
 
     cin>>clusters;
     char a;
@@ -187,15 +191,23 @@ int main(int argc, char** argv) {
     ifstream inputD;
     inputD.open(filename, ios::in);
     inputD.seekg(ios_base::beg);
+    double *arrMin= new double[cantAtributos];
+    double *arrMax= new double[cantAtributos];
+    for(int n=0;n<cantAtributos;n++){
+        arrMin[n]=MAX_DOUBLE;
+        arrMax[n]=MIN_DOUBLE;
+    }
     for(int i=0;i<cantDatos;i++){
         for(int j=0;j<cantAtributos;j++){
-                double temp;
                 inputD.getline(numero, 100,',');
-                data[i][j]=atoi(numero)*1.0;
+                double temp=atoi(numero)*1.0;
+                if(temp < arrMin [j]) arrMin[j]=temp;
+                if(temp > arrMax [j]) arrMax[j]=temp;
+                data[i][j]=temp;
                 cout<<data[i][j]<<endl;
         }
     }
-    clusterizacion(cantAtributos, clusters, data, cantDatos);
+    clusterizacion(cantAtributos, clusters, data, cantDatos,arrMin,arrMax);
     
     cin>>a;
     cout<<a;
