@@ -10,11 +10,14 @@
 #include <fstream>
 #include <iostream>
 #include <math.h>
-#define MAX_MON 5
+#include <time.h>
+#include <cstring>
+#define MAX_MON 0.009
 #define MAX_INF (1<<30)
 #define sqr(x) ((x)*(x))
 #define MAX_DOUBLE 100000000.0
 #define MIN_DOUBLE -100000000.0
+
 
 using namespace std;
 
@@ -64,9 +67,12 @@ void calcular_media_cluster(double **data, int cantAtributos, int cantDatos,
             numClasificados++;
         }
     }
-    if(numClasificados!=0)
-        for (int i=0;i<cantAtributos;i++)
-            media[i] /= (numClasificados*1.0);
+   
+    for (int i=0;i<cantAtributos;i++){
+         if(numClasificados!=0) media[i] /= (numClasificados*1.0);
+         else media[i]=data[(rand()%cantDatos)][i];
+    }     
+
 }
 
 double* mover_centroides(double **centroides, int cantClusters, int cantAtributos, 
@@ -103,6 +109,35 @@ void definir_centroides(double ** centroides, int cantClusters, int cantAtributo
     }
 }
 
+void definir_centroides2(double ** centroides, int cantClusters, int cantAtributos,
+                         int cantDatos,double **data){
+    for(int i=0;i<cantClusters;i++){
+        for(int j=0;j<cantAtributos;j++){
+            
+            int n=rand()%cantDatos;
+            centroides[i][j]=data[n][j];
+        }
+    }
+    for(int i=0;i<cantClusters;i++){
+        for(int j=0;j<cantAtributos;j++){
+            printf("%lf ",centroides[i][j]);
+        }
+        printf("\n");
+    }    
+}
+void itoa(int num, char*cad){
+    int i=0;
+    char *cad2=new char[5];
+    while(num){
+        cad2[i]=num%10 + '0';
+        num/=10;
+        i++;
+    }
+    for(int j=0;j<i;j++)
+        cad[j]=cad2[i-j-1];
+    cad[i]=0;
+}
+
 void clusterizacion(int cantAtributos, int cantClusters, double ** data, int cantDatos,
                     double *arrMin,double *arrMax){
     double ** centroides = new double *[cantClusters];
@@ -112,21 +147,25 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
     }
     int * arrClasif= new int [cantDatos];
     //definir centroides iniciales;
-    definir_centroides(centroides, cantClusters, cantAtributos,arrMin,arrMax); //falta hacer bien esta funcion
+    definir_centroides(centroides, cantClusters, cantAtributos,arrMin,arrMax);//falta hacer bien esta funcion
+    //definir_centroides2(centroides, cantClusters, cantAtributos,cantDatos,data);
     int convergencia = 0;
     double conv_min = MAX_MON;
+    int iter=0;
     while(!convergencia){
         asignar_items(data, centroides, cantAtributos, cantDatos, cantClusters, 
                 arrClasif);
         double *dist_movida = mover_centroides(centroides, cantClusters, cantAtributos, arrClasif, data,
                 cantDatos);
         for(int i=0;i<cantClusters;i++)
-            if(dist_movida[i]<conv_min)
+            if(dist_movida[i]<conv_min)//
                 convergencia++;
         if(convergencia==cantClusters)
             convergencia =1;
         else convergencia =0;
+        iter++;
     }
+    cout<<endl;
     for(int i=0;i<cantClusters;i++){
         for(int j=0;j<cantAtributos;j++){
             printf("%lf ",centroides[i][j]);
@@ -134,22 +173,33 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
         printf("\n");
     }    
     ofstream output;
-    output.open("k_output3.csv",ios::out);
+
+
+
+    // definir salida
+    char* num=new char[5];
+    itoa(cantClusters,num);
+    char * arch= new char[25];
+    strcpy(arch,num);
+    strcat(arch,"_output.csv");
+    
+    output.open(arch,ios::out);
     for(int i=0;i<cantDatos;i++){
         for(int j =0;j<cantAtributos;j++)
             output<<data[i][j]<<",";
         output<<arrClasif[i]<<endl;
     }
     output.close();
-    
+    cout<<endl<<iter<<endl;
 }
 
 int main(int argc, char** argv) { 
     //aca debe leer el archivo, sacar la cantidad de datos y ponerlo todo
     //en una matriz doble donde mat[cantDatos][cantAtributos]
-       
+    //cout<<MAX_INF;
+    srand(time(NULL));
     char * filename = new char [100];
-    int cantAtributos=2, clusters=4;
+    int cantAtributos=2, clusters=6;
     printf("escriba el nombre de archivo\n");
     //cin>>filename;
     printf("escriba la cantidad de atributos\n");
@@ -170,7 +220,7 @@ int main(int argc, char** argv) {
     //si no encuentra uno de los atributos no debe tomar en cuenta el registro
     
     ifstream input;   
-    input.open("a.csv", ios_base::in);
+    input.open("gaussian-2dim.csv", ios_base::in);
     
     double dataBuff[10000][cantAtributos];
     double numero;
