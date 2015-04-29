@@ -172,7 +172,7 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
         }
         printf("\n");
     }    
-    ofstream output;
+    
 
 
 
@@ -182,7 +182,7 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
     char * arch= new char[25];
     strcpy(arch,num);
     strcat(arch,"_output.csv");
-    
+    ofstream output;
     output.open(arch,ios::out);
     for(int i=0;i<cantDatos;i++){
         for(int j =0;j<cantAtributos;j++)
@@ -193,21 +193,22 @@ void clusterizacion(int cantAtributos, int cantClusters, double ** data, int can
     cout<<endl<<iter<<endl;
 }
 
-int main(int argc, char** argv) { 
+int main2(char* filename) { 
     //aca debe leer el archivo, sacar la cantidad de datos y ponerlo todo
     //en una matriz doble donde mat[cantDatos][cantAtributos]
     //cout<<MAX_INF;
     srand(time(NULL));
-    char * filename = new char [100];
-    int cantAtributos=2, clusters=6;
-    printf("escriba el nombre de archivo\n");
-    //cin>>filename;
+   
+    int cantAtributos=2, clusters=2;
+     
     printf("escriba la cantidad de atributos\n");
     //cin>>cantAtributos;
     printf("escriba la cantidad de clusters\n");
 
     //cin>>clusters;
     char a;
+    
+    //NORMALIZACIÓN
     
     double *arrMin= new double[cantAtributos];
     double *arrMax= new double[cantAtributos];
@@ -220,7 +221,7 @@ int main(int argc, char** argv) {
     //si no encuentra uno de los atributos no debe tomar en cuenta el registro
     
     ifstream input;   
-    input.open("gaussian-2dim.csv", ios_base::in);
+    input.open(filename, ios_base::in);
     
     double dataBuff[10000][cantAtributos];
     double numero;
@@ -261,5 +262,73 @@ int main(int argc, char** argv) {
     cout<<cantDatos<<endl;
 
     return 0;
+}
+void convertir(double &numero,int min,int max){
+    numero=-1+2*((numero-min)/(max-min));
+}
+void normalizacion(char* filename){
+    
+    int cantAtributos;
+    cin>>cantAtributos;
+    double *arrMin= new double[cantAtributos];
+    double *arrMax= new double[cantAtributos];
+    ifstream input;   fstream out;
+    out.open("diabetes_norm_268.txt",ios::out);
+    input.open(filename, ios_base::in);
+    
+    double dataBuff[10000][cantAtributos];
+    double numero;
+    char fin;
+    int cantDatos=0;
+    while( input){
+        for(int j=0;j<cantAtributos;j++){
+            input>>numero;
+            
+            input.ignore(1);// se ignora la coma
+            fin=input.peek();
+            if((fin>='0' & fin<='9')||input.eof() ) dataBuff[cantDatos][j]=numero; 
+            else {
+                cantDatos--; // no se considera el registro si tiene menos atributos
+                break;
+            }
+            
+        }
+        cantDatos++;
+        if(input.eof()) break;       
+    }
+    input.close();
+    double **data = new double* [cantDatos];
+    for(int i=0;i<cantDatos;i++){
+        double *temp = new double[cantAtributos];
+        data[i]=temp;
+    } 
+    for(int i=0;i<cantDatos;i++){
+        for(int j=0;j<cantAtributos;j++){
+            double dato= dataBuff[i][j];
+            if(dato < arrMin [j]) arrMin[j]=dato;
+            if(dato > arrMax [j]) arrMax[j]=dato;
+            data[i][j]=dato;
+            cout<<dato<< " ";  
+        }
+        cout<<endl;
+    }
+    
+    for(int i=0;i<cantDatos;i++){
+        for(int j =0;j<cantAtributos;j++){
+            numero=data[i][j];
+            convertir(numero,arrMin[j],arrMax[j]);
+            out<<numero<<",";
+        }
+            
+        
+    }
+    
+}
+int main(){
+    char * filename = new char [100];
+    printf("escriba el nombre de archivo\n");
+    cin>>filename;
+    normalizacion("diabetes_Test_268.txt");
+    return EXIT_SUCCESS;
 }
 
